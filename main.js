@@ -1,6 +1,6 @@
 //請求書自動作成のスタンドアロンプロジェクト版
 
-function fillInWowInvoice(){
+function fillInWowInvoice() {
   //生成対象月をダイアログで確認
   const today = dayjs.dayjs(new Date());
   // sheetNameはCreatePdfOutputとisFilledにもあるので変更を忘れないこと！
@@ -14,27 +14,27 @@ function fillInWowInvoice(){
 
 
   //振込先などで未入力箇所がないか確認（内部組み込み関数として動作）
-  function isFilled(){
+  function isFilled() {
     const ui = SpreadsheetApp.getUi();
     const isFilled = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName).getRange("B6:G11")
       .getBackgrounds()
       .flat()
       .filter(e => e == "#e06666").length;
-    if(isFilled != 0){
-      return ui.alert("警告","振込先、住所、メールアドレスなど必要な項目を入力したか確認してください。\n\nこの警告を無視して続行しますか？", ui.ButtonSet.YES_NO);
-    }else{
+    if (isFilled != 0) {
+      return ui.alert("警告", "振込先、住所、メールアドレスなど必要な項目を入力したか確認してください。\n\nこの警告を無視して続行しますか？", ui.ButtonSet.YES_NO);
+    } else {
       return ui.Button.OK;
     }
   }
 
 
 
-  try{
+  try {
     const ui = SpreadsheetApp.getUi();
     //そもそも「請求書作成」シートがないと話にならないので今のうちに判定
-    if(!SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName)){
-      const res = ui.alert("警告",`「${sheetName}」シートがありません。\nテンプレートをこのスプレッドシートに新しく生成しますか？\nこのエラーに心当たりが無い場合、シート名を変更していないことを確認してください。`, ui.ButtonSet.YES_NO);
-      switch(res){
+    if (!SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName)) {
+      const res = ui.alert("警告", `「${sheetName}」シートがありません。\nテンプレートをこのスプレッドシートに新しく生成しますか？\nこのエラーに心当たりが無い場合、シート名を変更していないことを確認してください。`, ui.ButtonSet.YES_NO);
+      switch (res) {
         case ui.Button.YES:
           SpreadsheetApp
             .openById(cloneOriginSheetId)
@@ -46,7 +46,7 @@ function fillInWowInvoice(){
       }
     }
     //振込先などで未入力箇所がないか確認
-    switch(isFilled()){
+    switch (isFilled()) {
       case ui.Button.NO:
       case ui.Button.CLOSE: return;
     }
@@ -56,21 +56,21 @@ function fillInWowInvoice(){
       return;
     }
     //生成対象月の確認
-    const res1 = ui.alert("請求書生成対象月の確認",`${today.year()}年${today.month()+1}月${today.date()}日を発行日として、\n【${target.year()}年${target.month() + 1}月授業料請求書】をPDF出力します。よろしいですか？\n違う日付を指定する場合は「いいえ」を、やめる場合はキャンセルを押してください。`, ui.ButtonSet.YES_NO_CANCEL);
-    switch(res1){
-      case ui.Button.YES : /*何もしない*/ break;
-      case ui.Button.NO : 
+    const res1 = ui.alert("請求書生成対象月の確認", `${today.year()}年${today.month() + 1}月${today.date()}日を発行日として、\n【${target.year()}年${target.month() + 1}月授業料請求書】をPDF出力します。よろしいですか？\n違う日付を指定する場合は「いいえ」を、やめる場合はキャンセルを押してください。`, ui.ButtonSet.YES_NO_CANCEL);
+    switch (res1) {
+      case ui.Button.YES: /*何もしない*/ break;
+      case ui.Button.NO:
         /*日付再入力*/
         anotherTarget = ui.prompt("日付の入力", "請求日の年月日を8桁の半角数字で入力してください。\n例えば、20241001と入力すると「2024年10月01日に提出する予定の、2024年9月に行った授業の請求書」ができます。\n【注意】基本的には参考情報を検索する時のみにご使用ください。\n提出期限を過ぎた請求書や未来の日付の請求書の作成に当たり、問題が生じても責任は取りかねます。また、備考欄に未来や過去の日付の請求書である旨が記載されます。", ui.ButtonSet.OK_CANCEL);
-        if(anotherTarget == ui.Button.CANCEL || anotherTarget == ui.Button.CLOSE || anotherTarget == ""){
+        if (anotherTarget == ui.Button.CANCEL || anotherTarget == ui.Button.CLOSE || anotherTarget == "") {
           return;
-        }else{
+        } else {
           anotherTarget = String(anotherTarget.getResponseText());
-          if(/[0-9]{8}/.test(anotherTarget)){
-            anotherTarget = anotherTarget.slice(0,4) + "-" + anotherTarget.slice(4,6) + "-" + anotherTarget.slice(-2);
+          if (/[0-9]{8}/.test(anotherTarget)) {
+            anotherTarget = anotherTarget.slice(0, 4) + "-" + anotherTarget.slice(4, 6) + "-" + anotherTarget.slice(-2);
             anotherTargetRaw = dayjs.dayjs(anotherTarget);
             anotherTarget = dayjs.dayjs(anotherTarget).add(-1, "month")
-          }else{
+          } else {
             ui.alert("エラー", "正しい数値形式での入力を確認できませんでした。", ui.ButtonSet.OK);
             return;
           }
@@ -79,14 +79,14 @@ function fillInWowInvoice(){
       case ui.Button.CANCEL:
       case ui.Button.CLOSE: /*強制終了*/ return;
     }
-  }catch(e){
+  } catch (e) {
     console.warn(e);
-    console.log("開発用テスト出力開始", target.year(), "年", target.month() , "月分");
+    console.log("開発用テスト出力開始", target.year(), "年", target.month(), "月分");
   }
 
   console.log(anotherTarget);
   //anotherTargetの中にnull以外が入っていれば、targetをすげ替える
-  if(anotherTarget){
+  if (anotherTarget) {
     target = anotherTarget;
   }
   //結果を連想配列に格納
@@ -94,9 +94,9 @@ function fillInWowInvoice(){
   //targetの月と一致するものを請求月分の授業として探していく
   const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
   //生徒名のシート（くん、さん、ちゃん、君、様）で終わるシートをすべて取得し、請求月分の授業があるかどうかを調査
-  for(const e in sheets){
-    let n = sheets[e].getName(); 
-    if(n.endsWith("くん") || n.endsWith("さん") || n.endsWith("ちゃん") || n.endsWith("君") || n.endsWith("様")){
+  for (const e in sheets) {
+    let n = sheets[e].getName();
+    if (n.endsWith("くん") || n.endsWith("さん") || n.endsWith("ちゃん") || n.endsWith("君") || n.endsWith("様")) {
       //このシートについて、今月何回授業があったか判定（＝B列に請求対象月の日付がいくらあったか判定）
       let dates = sheets[e].getRange("B3:B").getValues();
       dates = dates.filter(e => e[0]).flat();
@@ -107,22 +107,22 @@ function fillInWowInvoice(){
       dates = dates.filter(e => e.getMonth() == target.month() && e.getFullYear() == target.year());
       console.log(dates);
       //1つ以上日付の配列が残っていれば、名前と個数を挿入
-      if(dates.length){
-        result.push({name : n, dates: dates});
+      if (dates.length) {
+        result.push({ name: n, dates: dates });
       }
     }
   }
   //resultが25を超えると多すぎるのでエラー
-  if(result.length >= 25){
+  if (result.length >= 25) {
     const ui = SpreadsheetApp.getUi();
     ui.alert("エラー", "対象データが多すぎます。現在25人（件）を超えて格納することはできません。ダーさんに問い合わせてください。", ui.ButtonSet.OK);
     return;
   }
   //請求書のガワ改変（請求金額影響なし）・日付編
   const invoice = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  if(anotherTarget){
+  if (anotherTarget) {
     invoice.getRange("G4").setFormula(`DATE(${anotherTargetRaw.year()},${anotherTargetRaw.month() + 1},${anotherTargetRaw.date()})`);
-  }else{
+  } else {
     invoice.getRange("G4").setFormula("TODAY()");
   }
   //結果を出力（シートに書き込み）
@@ -137,7 +137,7 @@ function fillInWowInvoice(){
   //単価部分を元に戻す
   invoice.getRange("E17:E41").setFormulaR1C1('IF(ISBLANK(R[0]C[-3]),"",2000)');
   //名前と回数を入れる
-  for(const [i, e] of result.entries()){
+  for (const [i, e] of result.entries()) {
     invoice.getRange(17 + i, 2).setValue(e.name + "授業");
     invoice.getRange(17 + i, 4).setValue(e.dates.length);
   }
@@ -147,14 +147,14 @@ function fillInWowInvoice(){
   invoice.activate();
 
   //PDF書き出し
-  try{
+  try {
     //URLを生成する
     const ui = SpreadsheetApp.getUi();
     const res2 = ui.alert("完了", "正常に入力が完了しました。\nこのままPDFも出力しますか？\n少人数授業、その他報酬が発生した業務などを記入する必要がある場合は「いいえ」を押してください。", ui.ButtonSet.YES_NO);
-    if(res2 == ui.Button.YES){
+    if (res2 == ui.Button.YES) {
       createPdfOutput();
     }
-  }catch(e){
+  } catch (e) {
     console.warn(e);
   }
 }
@@ -166,28 +166,28 @@ function fillInWowInvoice(){
 
 
 //PDF書き出しは独立して別に呼び出せるようにする
-function createPdfOutput(){
+function createPdfOutput() {
   const sheetName = "請求書作成v2"
   const invoice = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   const ui = SpreadsheetApp.getUi();
 
-  try{
+  try {
     const caller = createPdfOutput.caller.name;
 
-    if(!caller){
-      switch(isFilled()){
+    if (!caller) {
+      switch (isFilled()) {
         case ui.Button.NO:
         case ui.Button.CLOSE: return;
       }
     }
-  }catch(e){
+  } catch (e) {
     console.warn("unknown caller");
   }
 
   //const today = dayjs.dayjs(new Date());
   const issued = dayjs.dayjs(invoice.getRange("G4").getValue());
   // 請求書が有効なものかどうか見ている？詳細不明
-  const isAvail = invoice.getRange("A45").getValue();
+  const isValid = invoice.getRange("A46").getValue();
   const target = issued.add(-1, "month");
 
   //URL生成用のIDを生み出す
@@ -221,7 +221,7 @@ function createPdfOutput(){
   const htmlTemp = HtmlService.createTemplateFromFile("dialog");
   htmlTemp.url = url;
   htmlTemp.fileName = fileName;
-  htmlTemp.isAvail = isAvail;
+  htmlTemp.isValid = isValid;
   html = htmlTemp.evaluate();
   ui.showModalDialog(html, "PDFファイルのダウンロード");
 }
