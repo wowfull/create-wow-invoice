@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <p>保存後、じーつーのSlackのDMに提出してください。<br>ここから請求書のPDFファイルを直接ローカルにダウンロード出来ます。
+    <span hidden id="isAvail" style="color: #ff0000;"><br><strong><?=isAvail ?></strong></span>
+    <br>
+    <br>【注意】下記の処理を行う場合、このウィンドウを閉じて手動でシートを編集した後に「PDF出力のみ行う」を押してください。
+    <br>・値引処理
+    <br>・少人数指導の計算
+    <br>・インボイス制度（適格請求書）対応</p>
+    <a id="download" href="<?=url ?>" target="_blank">お待ち下さい…（この状態でクリックすると名前変更前のPDFを見ることができます）</a>
+    <p>保存した後、必ず一度内容を確認した上で提出してください。</p>
+  </body>
+  <script>
+    window.addEventListener("load", () => {
+      const name = <?=fileName ?>;
+      const url = <?=url ?>;
+      const isAvail = <?=isAvail ?>;
+      if(isAvail){
+        document.getElementById("isAvail").hidden = false;
+      }
+      fetch(url)
+        .then(r => r.blob())
+        .then(blob => new File([blob], name + ".pdf", {
+          type: "application/pdf",
+        }))
+        .then(file => {
+          document.getElementById("download").href = window.URL.createObjectURL(file);
+          document.getElementById("download").download = name + ".pdf";
+          document.getElementById("download").innerText = `「${name}.pdf」をダウンロード`;
+        });
+    });
+  </script>
+</html>
