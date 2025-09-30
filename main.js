@@ -28,6 +28,8 @@ function fillInWowInvoice() {
   }
 
 
+  // 請求書シート取得
+  const invoice = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
 
   try {
     const ui = SpreadsheetApp.getUi();
@@ -80,6 +82,8 @@ function fillInWowInvoice() {
       case ui.Button.CLOSE: /*強制終了*/ return;
     }
   } catch (e) {
+    const ui = SpreadsheetApp.getUi();
+    ui.alert("エラー", `以下の内容でエラーが発生しました。開発環境以外でこのエラーが発生した場合、ダーさんにお知らせ下さい。\n\n${e}`, ui.ButtonSet.OK)
     console.warn(e);
     console.log("開発用テスト出力開始", target.year(), "年", target.month(), "月分");
   }
@@ -119,7 +123,6 @@ function fillInWowInvoice() {
     return;
   }
   //請求書のガワ改変（請求金額影響なし）・日付編
-  const invoice = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (anotherTarget) {
     invoice.getRange("G4").setFormula(`DATE(${anotherTargetRaw.year()},${anotherTargetRaw.month() + 1},${anotherTargetRaw.date()})`);
   } else {
