@@ -141,7 +141,7 @@ function fillInWowInvoice() {
   invoice.getRange("E17:E41").setFormulaR1C1('IF(ISBLANK(R[0]C[-3]),"",2000)');
   //名前と回数を入れる
   for (const [i, e] of result.entries()) {
-    invoice.getRange(17 + i, 2).setValue(`${e.name}授業（${target.month()}）月`);
+    invoice.getRange(17 + i, 2).setValue(`${e.name}授業（${target.month()}月）`);
     invoice.getRange(17 + i, 4).setValue(e.dates.length);
   }
   console.log(result);
